@@ -15,34 +15,34 @@ class SlackBotTest(unittest.TestCase):
 
     def test_parse_message_jira_only(self):
         self.message=[]
-        self.message.append(json.loads('{"text":"SAAS-324","channel":"1234"}'))
+        self.message.append(json.loads('{"text":"SLAC-324","channel":"1234"}'))
         jiras_list = self.bot.parse_slack_incoming_message(self.message)
-        expected_list=[['SAAS-324','1234']]
+        expected_list=[['SLAC-324','1234']]
         self.assertEqual(jiras_list,expected_list)
 
     def test_parse_message_jira_at_end(self):
         self.message=[]
-        self.message.append(json.loads('{"text":"jira number SAAS-324","channel":"1234"}'))
+        self.message.append(json.loads('{"text":"jira number SLAC-3","channel":"1234"}'))
         jiras_list = self.bot.parse_slack_incoming_message(self.message)
-        expected_list=[['SAAS-324','1234']]
+        expected_list=[['SLAC-3','1234']]
         self.assertEqual(jiras_list,expected_list)
 
     def test_parse_message_jira_at_begining(self):
         self.message=[]
-        self.message.append(json.loads('{"text":"SAAS-334 is owned by spark team","channel":"3455"}'))
+        self.message.append(json.loads('{"text":"SLAC-22 is opened against slack hq team","channel":"3455"}'))
         jiras_list = self.bot.parse_slack_incoming_message(self.message)
-        expected_list=[['SAAS-334','3455']]
+        expected_list=[['SLAC-22','3455']]
         self.assertEqual(jiras_list,expected_list)
 
     def test_parse_message_jira_in_middle(self):
         self.message=[]
-        self.message.append(json.loads('{"text":"Jira number SAAS-334 is resolved","channel":"3455"}'))
+        self.message.append(json.loads('{"text":"Jira number SLAC-1 is resolved","channel":"3455"}'))
         jiras_list = self.bot.parse_slack_incoming_message(self.message)
-        expected_list=[['SAAS-334','3455']]
+        expected_list=[['SLAC-1','3455']]
         self.assertEqual(jiras_list,expected_list)
 
     def test_build_valid_url(self):
-        jira="SAAS-324"
+        jira="SLAC-1"
         expected_url = self.bot.JIRA_BASE_URL+"browse/"+jira
         jira_url = self.bot.build_url(jira)
         self.assertEqual(jira_url,expected_url)
