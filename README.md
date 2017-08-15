@@ -1,5 +1,4 @@
-# Bot posting jira issues to Slack
-
+# Bot posting jira issues to Slack [![Build Status](https://travis-ci.org/SRELETI/jirabot.svg?branch=master)](https://travis-ci.org/SRELETI/jirabot)
 
 ### Overview
 
