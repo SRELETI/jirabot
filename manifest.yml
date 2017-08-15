@@ -9,10 +9,11 @@ applications:
   disk_quota: 1024M
   env:
     SLACK_BOT_TOKEN: ""
-    IBM_JIRA_BASE_URL: ""
-    IBM_JIRA_ISSUE_FORMAT: ""
-    IBM_JIRA_ISSUE_PATH: ""
-    IBM_JIRA_REST_PATH: ""
-    IBM_JIRA_USERNAME: "<>"
-    IBM_JIRA_PASSWORD: "<>"
+    JIRA_BASE_URL: ""
+    JIRA_ISSUE_FORMAT: ""
+    JIRA_ISSUE_PATH: ""
+    JIRA_REST_PATH: ""
+    JIRA_USERNAME: ""
+    JIRA_PASSWORD: ""
+    WAIT_TIME:
 

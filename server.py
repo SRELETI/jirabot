@@ -15,7 +15,23 @@ class SlackBot(object):
     JIRA_ISSUE_PATH=os.environ.get('JIRA_ISSUE_PATH')
     JIRA_USERNAME=os.environ.get('JIRA_USERNAME')
     JIRA_PASSWORD=os.environ.get('JIRA_PASSWORD')
-    WAIT_TIME=1
+    WAIT_TIME=os.environ.get('WAIT_TIME')
+
+    def __init__(self):
+        self.slack_client = SlackClient(SlackBot.SLACK_BOT_TOKEN)
+
+    def connectToSlack(self):
+        if self.slack_client.rtm_connect():
+            print("Spark-Jira Bot connected and running")
+            while True:
+                message = self.slack_client.rtm_read()
+                jira_issues=self.parse_slack_incoming_message(message)
+                if jira_issues and len(jira_issues)>0:
+                    self.post_jira_issues_url(jira_issues)
+                time.sleep(SlackBot.WAIT_TIME)
+        else:
+            print("Unable to connect to Slack. Check your SLACK_BOT_TOKEN "+SlackBot.SLACK_BOT_TOKEN)
+
 
     def parse_slack_incoming_message(self,slack_incoming_messages):
         '''Parse the slack messages received from slack rtm api and get the text and channel from it'''
@@ -30,20 +46,17 @@ class SlackBot(object):
             return jira_issue_channel_list
         return None
 
-    def build_fields(self,jira):
-        response = requests.get(SlackBot.JIRA_BASE_URL+SlackBot.JIRA_REST_PATH+SlackBot.JIRA_ISSUE_PATH+jira,headers={'Content-Type': 'application/json'},verify=False,auth=HTTPBasicAuth(SlackBot.JIRA_USERNAME,SlackBot.JIRA_PASSWORD))
-        jira_json = response.json()
-        jira_fields_json = jira_json['fields']
-        assignee= jira_fields_json['assignee']['displayName']
-        status = jira_fields_json['status']['name']
-        return [assignee,status]
-
     def post_jira_issues_url(self,jira_issues):
         '''Builds jira issue url and post it using slack api'''
         for jira_issue in jira_issues:
             response = self.build_url(jira_issue[0])
             attachments = self.build_attachments(response,jira_issue[0])
             self.slack_client.api_call("chat.postMessage",channel=jira_issue[1],attachments=attachments,as_user=True)
+
+    def build_url(self,jira):
+        if jira is None or not jira:
+            return None
+        return self.JIRA_BASE_URL+"browse/"+str(jira)
 
     def build_attachments(self,jira_web_url,jira):
         '''Build Attachments'''
@@ -62,28 +75,17 @@ class SlackBot(object):
         attachments['fields']=[field_json,field_json_status]
         return [attachments]
 
-
-
-
-    def build_url(self,jira):
-        if jira is None or not jira:
-            return None
-        return self.JIRA_BASE_URL+"browse/"+str(jira)
-
-    def __init__(self):
-        self.slack_client = SlackClient(SlackBot.SLACK_BOT_TOKEN)
-
-    def connectToSlack(self):
-        if self.slack_client.rtm_connect():
-            print("Spark-Jira Bot connected and running")
-            while True:
-                message = self.slack_client.rtm_read()
-                jira_issues=self.parse_slack_incoming_message(message)
-                if jira_issues and len(jira_issues)>0:
-                    self.post_jira_issues_url(jira_issues)
-                time.sleep(SlackBot.WAIT_TIME)
+    def build_fields(self,jira):
+        response = requests.get(SlackBot.JIRA_BASE_URL+SlackBot.JIRA_REST_PATH+SlackBot.JIRA_ISSUE_PATH+jira,headers={'Content-Type': 'application/json'},verify=False,auth=HTTPBasicAuth(SlackBot.JIRA_USERNAME,SlackBot.JIRA_PASSWORD))
+        jira_json = response.json()
+        jira_fields_json = jira_json['fields']
+        if jira_fields_json['assignee']:
+            assignee= jira_fields_json['assignee']['displayName']
         else:
-            print("Unable to connect to Slack. Check your SLACK_BOT_TOKEN "+SLACK_BOT_TOKEN)
+            assignee = "Unassigned"
+        status = jira_fields_json['status']['name']
+        return [assignee,status]
+
 
 
 
